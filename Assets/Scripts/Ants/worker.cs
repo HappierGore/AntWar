@@ -108,12 +108,10 @@ public class worker : MonoBehaviour
     {
         if (detectionZone.nearResource.Length != 0)
         {
-            //Debug.Log("Entrando");
             for (int i = 0; i < detectionZone.nearResource.Length; i++)
             {
                 if (detectionZone.nearResource[i].transform == basePosition)
                 {
-                    //Debug.Log("Condicion 2");
                     StartCoroutine(DepositInventory());
                 }
             }
@@ -123,7 +121,6 @@ public class worker : MonoBehaviour
     {
         if(!alreadyDropping && manager.pathPosition == new Vector2( basePosition.position.x, basePosition.position.y))
         {
-            //print("Entrando");
             alreadyDropping = true;
             while (ownInventory.totalCollected > 0)
             {
@@ -161,7 +158,6 @@ public class worker : MonoBehaviour
                 tempDistance = fixedDistance;
                 manager.objecToGo = temp[i];
                 resource = temp[i].GetComponent<ResourceStats>();
-                //Debug.Log("passing");
                 continue;
             }
         }
