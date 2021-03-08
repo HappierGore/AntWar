@@ -24,7 +24,7 @@ public class GeneralHabilities
         if (!alreadyMoving)
         {
             alreadyMoving = true;
-            offset = (randomOffset && !pathXCompleted) ? Random.Range(0.1f, 0.7f) : offset;
+            offset = (randomOffset && !pathXCompleted) ? Random.Range(0.1f, 0.6f) : offset;
             if (ant.transform.position.x < destination.x - offset)
             {
                 pathXCompleted = false;
@@ -61,7 +61,7 @@ public class GeneralHabilities
         if (!alreadyMovingY)
         {
             alreadyMovingY = true;
-            offset = (randomOffset && !pathYCompleted) ? Random.Range(0.1f, 0.7f) : offset;
+            offset = (randomOffset && !pathYCompleted) ? Random.Range(0.1f, 0.6f) : offset;
             if (ant.transform.position.y < destination.y - offset)
             {
                 pathYCompleted = false;

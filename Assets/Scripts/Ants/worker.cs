@@ -15,12 +15,15 @@ public class worker : MonoBehaviour
 
     //Inventario
     private Inventory antihillInventory, ownInventory;
-    private bool alreadyCollecting = false, alreadyDropping = false;
+    private bool alreadyCollecting = false, alreadyDropping = false, backToWorkHelper = false;
     public bool inAntHill = false;
 
     //Base
     [SerializeField] private Transform basePosition;
-    // Start is called before the first frame update
+    //Regresar al trabajo si no hay cambios en el path
+    GameObject objectToGotemp = null;
+
+
     void Start()
     {
         Initialize();
@@ -50,6 +53,7 @@ public class worker : MonoBehaviour
         }
 
         AntHillInside();
+        StartCoroutine(BackToWork());
     }
 
 
@@ -63,6 +67,7 @@ public class worker : MonoBehaviour
         basePosition = GameObject.Find("Anthill").transform;
         antHill = basePosition.GetComponent<AntHill>();
     }
+
     private void RecollectResource()
     {
         if (detectionZone.nearResource.Length != 0)
@@ -102,7 +107,7 @@ public class worker : MonoBehaviour
 
     private void ReturnToAnthill()
     {
-        if(!manager.startPath)
+        if(!manager.startPath && !inAntHill)
         {
             habilities.pathXCompleted = false;
             habilities.pathYCompleted = false;
@@ -190,7 +195,7 @@ public class worker : MonoBehaviour
         {
             if(manager.pathPosition != new Vector2(antHill.store.transform.position.x,antHill.store.transform.position.y))
             {
-                pathPos2 = (pathPos2 == new Vector2(0,0)) ? manager.pathPosition : pathPos2;
+                pathPos2 = (pathPos2 == new Vector2(0,0)) ? new Vector2(Controller.clickedPosition.x,Controller.clickedPosition.y) : pathPos2;
                 manager.pathPosition = antHill.exit.transform.position;
             }
         }
@@ -215,6 +220,10 @@ public class worker : MonoBehaviour
             {
                 pathPos2 = (manager.objecToGo == null && new Vector3(manager.pathPosition.x,manager.pathPosition.y) != antHill.exit.transform.position) ? manager.pathPosition : new Vector2(manager.objecToGo.transform.position.x,manager.objecToGo.transform.position.y);
             }
+            else if(manager.objecToGo != null && objectToGotemp != manager.objecToGo)
+            {
+                pathPos2 = Controller.clickedPosition;
+            }
             if(manager.objecToGo != null && manager.objecToGo != resource.gameObject)
             {
                 resource = manager.objecToGo.GetComponent<ResourceStats>();
@@ -228,7 +237,7 @@ public class worker : MonoBehaviour
                 {
                     if (detectionZone.nearResource[i] == antHill.exit)
                     {
-                        manager.pathPosition = pathPos2;
+                        manager.pathPosition = (objectToGotemp != null && manager.objecToGo != null) ? pathPos2 : new Vector2(Controller.clickedPosition.x,Controller.clickedPosition.y);
                         inAntHill = false;
                         manager.enabled = true;
                         GetComponent<SpriteRenderer>().enabled = true;
@@ -247,6 +256,34 @@ public class worker : MonoBehaviour
         }
 
     }
+
+    //En caso de que vaya a un sitio sin recurso, regresar a su trabajo despues de cierto tiempo
+    private IEnumerator BackToWork()
+    {
+        if(!backToWorkHelper && !manager.startPath)
+        {
+            backToWorkHelper = true;
+            objectToGotemp = (objectToGotemp == null || manager.objecToGo != null && objectToGotemp != manager.objecToGo) ? manager.objecToGo : objectToGotemp;
+            if (manager.objecToGo == null)
+            {
+                yield return new WaitForSecondsRealtime(2.0f);
+                if(ownInventory.totalCollected >= manager.GetStrenght())
+                {
+                    manager.objecToGo = objectToGotemp;
+                    ReturnToAnthill();
+                    Debug.Log("OJ");
+                }
+                else if (manager.objecToGo == null && resource != null)
+                {
+                    manager.objecToGo = objectToGotemp;
+                    manager.startPath = true;
+                    manager.pathPosition = objectToGotemp.transform.position;
+                }
+            }
+            backToWorkHelper = false;
+        }
+    }
+
 
     public float DistanceP1P2(float P1, float P2)
     {

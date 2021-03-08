@@ -28,29 +28,29 @@ public class Inventory : MonoBehaviour
 
     public void UpdateResource(int amount,resourceType resourceType)
     {
-        totalCollected += amount;
         switch (resourceType.ToString())
         {
             case "food":
                 {
-                    food = totalCollected;
+                    food += amount;
                     break;
                 }
             case "dirt":
                 {
-                    dirt = totalCollected;
+                    dirt += amount;
                     break;
                 }
             case "stone":
                 {
-                    stone = totalCollected;
+                    stone += amount;
                     break;
                 }
             case "honey":
                 {
-                    honey = totalCollected;
+                    honey += amount;
                     break;
                 }
         }
+        totalCollected = honey + stone + dirt + food;
     }
 }
