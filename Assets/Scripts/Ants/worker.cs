@@ -9,11 +9,14 @@ public class worker : MonoBehaviour
     private AntDetectionZone detectionZone;
     private AntManager manager;
     private Vector2 gizmosPosition;
+    public Vector2 pathPos2;
+    private AntHill antHill;
     public ResourceStats resource;
 
     //Inventario
     private Inventory antihillInventory, ownInventory;
     private bool alreadyCollecting = false, alreadyDropping = false;
+    public bool inAntHill = false;
 
     //Base
     [SerializeField] private Transform basePosition;
@@ -33,6 +36,7 @@ public class worker : MonoBehaviour
             if (habilities.pathXCompleted && habilities.pathYCompleted)
             {
                 manager.startPath = false;
+                pathPos2 = (!inAntHill) ? new Vector2(0, 0) : pathPos2;
             }
         }
         if(manager.objecToGo != null)
@@ -45,6 +49,7 @@ public class worker : MonoBehaviour
             }
         }
 
+        AntHillInside();
     }
 
 
@@ -56,6 +61,7 @@ public class worker : MonoBehaviour
         antihillInventory = GameObject.Find("Queen").GetComponent<Inventory>();
         habilities.Initialize(gameObject);
         basePosition = GameObject.Find("Anthill").transform;
+        antHill = basePosition.GetComponent<AntHill>();
     }
     private void RecollectResource()
     {
@@ -89,11 +95,12 @@ public class worker : MonoBehaviour
                 }
             }
             alreadyCollecting = false;
-            ReturnToStore();
+            ReturnToAnthill();
         }
         yield return new WaitForEndOfFrame();
     }
-    private void ReturnToStore()
+
+    private void ReturnToAnthill()
     {
         if(!manager.startPath)
         {
@@ -101,36 +108,6 @@ public class worker : MonoBehaviour
             habilities.pathYCompleted = false;
             manager.pathPosition = basePosition.position;
             manager.startPath = true;
-        }
-    }
-
-    private void DropInventory()
-    {
-        if (detectionZone.nearResource.Length != 0)
-        {
-            for (int i = 0; i < detectionZone.nearResource.Length; i++)
-            {
-                if (detectionZone.nearResource[i].transform == basePosition)
-                {
-                    StartCoroutine(DepositInventory());
-                }
-            }
-        }
-    }
-    private IEnumerator DepositInventory()
-    {
-        if(!alreadyDropping && manager.pathPosition == new Vector2( basePosition.position.x, basePosition.position.y))
-        {
-            alreadyDropping = true;
-            while (ownInventory.totalCollected > 0)
-            {
-                yield return new WaitForSecondsRealtime(2.0f);
-                antihillInventory.UpdateResource(1, ownInventory.type);
-                ownInventory.UpdateResource(-1, ownInventory.type);
-            }
-            ReturnToResource();
-            alreadyDropping = false;
-            manager.objecToGo = resource.gameObject;
         }
     }
     private void ReturnToResource()
@@ -144,11 +121,43 @@ public class worker : MonoBehaviour
         }
     }
 
+    private void DropInventory()
+    {
+        if (detectionZone.nearResource.Length != 0)
+        {
+            for (int i = 0; i < detectionZone.nearResource.Length; i++)
+            {
+                if (detectionZone.nearResource[i].transform == basePosition && manager.pathPosition == new Vector2(basePosition.position.x,basePosition.position.y)
+                    && !manager.startPath)
+                {
+                    AnthillJoining();
+                    //StartCoroutine(DepositInventory());
+                }
+            }
+        }
+    }
+    private IEnumerator DepositInventory()
+    {
+        if(!alreadyDropping && manager.pathPosition == new Vector2( antHill.store.transform.position.x, antHill.store.transform.position.y))
+        {
+            alreadyDropping = true;
+            while (ownInventory.totalCollected > 0)
+            {
+                yield return new WaitForSecondsRealtime(2.0f);
+                antihillInventory.UpdateResource(1, ownInventory.type);
+                ownInventory.UpdateResource(-1, ownInventory.type);
+            }
+            ReturnToResource();
+            alreadyDropping = false;
+            manager.objecToGo = resource.gameObject;
+        }
+    }
+
     private void LookForNewResource()
     {
         GameObject[] temp = GameObject.FindGameObjectsWithTag("resource");
         Vector2 resourcePos = new Vector2(0.0f, 0.0f);
-        float fixedDistance = 0.0f, tempDistance = 0.0f ;
+        float fixedDistance = 0.0f, tempDistance = 0.0f;
         for (int i = 0; i < temp.Length; i++)
         {
             resourcePos = temp[i].transform.position;
@@ -162,6 +171,83 @@ public class worker : MonoBehaviour
             }
         }
     }
+
+    //Anthill behaviour
+
+    private void AnthillJoining()
+    {
+        inAntHill = true;
+        manager.enabled = false;
+        transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<SpriteRenderer>().enabled = false;
+        manager.pathPosition = antHill.store.transform.position;
+        manager.startPath = true;
+        transform.position = antHill.exit.transform.position;
+    }
+    private void AntHillInside()
+    {
+        if(inAntHill)
+        {
+            if(manager.pathPosition != new Vector2(antHill.store.transform.position.x,antHill.store.transform.position.y))
+            {
+                pathPos2 = (pathPos2 == new Vector2(0,0)) ? manager.pathPosition : pathPos2;
+                manager.pathPosition = antHill.exit.transform.position;
+            }
+        }
+
+        if (detectionZone.nearResource.Length > 0 && inAntHill)
+        {
+            for (int i = 0; i < detectionZone.nearResource.Length; i++)
+            {
+                if (detectionZone.nearResource[i] == antHill.store && !manager.startPath)
+                {
+                    StartCoroutine(DepositInventory());
+                }
+            }
+        }
+        AnthillLeaving();
+    }
+    private void AnthillLeaving()
+    {
+        if (detectionZone.nearResource.Length > 0 && manager.pathPosition != new Vector2(antHill.store.transform.position.x,antHill.store.transform.position.y) && inAntHill)
+        {
+            if(pathPos2 == new Vector2(0.0f,0.0f))
+            {
+                pathPos2 = (manager.objecToGo == null && new Vector3(manager.pathPosition.x,manager.pathPosition.y) != antHill.exit.transform.position) ? manager.pathPosition : new Vector2(manager.objecToGo.transform.position.x,manager.objecToGo.transform.position.y);
+            }
+            if(manager.objecToGo != null && manager.objecToGo != resource.gameObject)
+            {
+                resource = manager.objecToGo.GetComponent<ResourceStats>();
+                manager.pathPosition = manager.objecToGo.transform.position;
+            }//Soluciona el problema de que cambio de recurso
+            manager.pathPosition = antHill.exit.transform.position;
+            manager.startPath = true;
+            if(detectionZone.nearResource.Length > 0)
+            {
+                for (int i = 0; i < detectionZone.nearResource.Length; i++)
+                {
+                    if (detectionZone.nearResource[i] == antHill.exit)
+                    {
+                        manager.pathPosition = pathPos2;
+                        inAntHill = false;
+                        manager.enabled = true;
+                        GetComponent<SpriteRenderer>().enabled = true;
+                        transform.position = new Vector3(0.0f, -5.0f, 0.0f);
+                    }
+                }
+            }
+        }
+        else if (manager.objecToGo == null && inAntHill)
+        {
+            pathPos2 = Controller.clickedPosition;
+        }
+        else if(manager.objecToGo != null && inAntHill)
+        {
+            pathPos2 = manager.objecToGo.transform.position;
+        }
+
+    }
+
     public float DistanceP1P2(float P1, float P2)
     {
         float distance = Mathf.Abs(P1 - P2);

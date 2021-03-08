@@ -18,7 +18,11 @@ public class OtherDetectionZone : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-
+        for (int i = 0; i < positions.Length; i++)
+        {
+            fixedPositions[i].x = transform.position.x + positions[i].x;
+            fixedPositions[i].y = transform.position.y + positions[i].y;
+        }
         Gizmos.DrawLine(fixedPositions[0], fixedPositions[1]);
         Gizmos.DrawLine(fixedPositions[1], fixedPositions[2]);
         Gizmos.DrawLine(fixedPositions[2], fixedPositions[3]);

@@ -9,11 +9,9 @@ public class AntManager : MonoBehaviour
     public bool startInitialize = false, startPath = false;
     public Vector2 pathPosition;
     public GameObject objecToGo = null;
-    public enum groups { group1, group2, group3, group4, group5, group6, group7, group8, group9, group10 };
-    public enum type { worker, soldier };
     private float health = 5.0f, speed = 1.0f, damage = 3.0f, strenght = 1.0f;
     private string antType, antGroup = "none";
-    [HideInInspector] public bool checking, selected;
+    public bool selected;
     private Controller controller;
     private SpriteRenderer selectedImage;
     // Start is called before the first frame update
@@ -29,7 +27,7 @@ public class AntManager : MonoBehaviour
         {
             Initialize();
         }
-        StartCoroutine(CheckSelected());
+        CheckSelected();
         if (Input.GetKeyDown(KeyCode.S))
         {
             db.UpdateAntData(gameObject.name, antType, transform.position, antGroup, health, speed, damage, strenght);
@@ -37,23 +35,16 @@ public class AntManager : MonoBehaviour
         FollowUI();
     }
 
-    private IEnumerator CheckSelected()
+    private void CheckSelected()
     {
-        if (!checking)
+        for (int i = 0; i < controller.antSelected.Length; i++)
         {
-            checking = true;
-            for (int i = 0; i < controller.antSelected.Length; i++)
+            if (controller.antSelected[i] == this.gameObject)
             {
-                if (controller.antSelected[i] == this.gameObject)
-                {
-                    selected = true;
-                    break;
-                }
-                selected = false;
+                selected = true;
+                break;
             }
-
-            yield return new WaitForEndOfFrame();
-            checking = false;
+            selected = false;
         }
     }
 

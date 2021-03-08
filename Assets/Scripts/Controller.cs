@@ -17,6 +17,7 @@ public class Controller : MonoBehaviour
     private PanGestureRecognizer panGesture;
     private Vector2 startClickPos, endClickPos;
     private float scalingZ = 5.0f;
+    public static Vector3 clickedPosition;
     // Start is called before the first frame update
     void Start()
     {
@@ -141,6 +142,7 @@ public class Controller : MonoBehaviour
         Vector3 clickPos = new Vector3(screenX, screenY, 0.0f);
         clickPos = Camera.main.ScreenToWorldPoint(clickPos);
         startClickPos = clickPos;
+        clickedPosition = clickPos;
     }
     private void UpdateSelectionBox(float screenX, float screenY)
     {
@@ -167,7 +169,7 @@ public class Controller : MonoBehaviour
                     if (allAnts[i].transform.position.x > startClickPos.x && allAnts[i].transform.position.x < endClickPos.x
                         && allAnts[i].transform.position.y < startClickPos.y && allAnts[i].transform.position.y > endClickPos.y)
                     {
-                        antSelected[i] = allAnts[i];
+                        antSelected[i] = (allAnts[i].GetComponent<AntManager>().isActiveAndEnabled) ? allAnts[i] : null;
                     }
                 }
                 else if (startClickPos.y < endClickPos.y)
@@ -175,7 +177,7 @@ public class Controller : MonoBehaviour
                     if (allAnts[i].transform.position.x > startClickPos.x && allAnts[i].transform.position.x < endClickPos.x
                         && allAnts[i].transform.position.y > startClickPos.y && allAnts[i].transform.position.y < endClickPos.y)
                     {
-                        antSelected[i] = allAnts[i];
+                        antSelected[i] = (allAnts[i].GetComponent<AntManager>().isActiveAndEnabled) ? allAnts[i] : null;
                     }
                 }
             }
@@ -186,7 +188,7 @@ public class Controller : MonoBehaviour
                     if (allAnts[i].transform.position.x < startClickPos.x && allAnts[i].transform.position.x > endClickPos.x
                         && allAnts[i].transform.position.y < startClickPos.y && allAnts[i].transform.position.y > endClickPos.y)
                     {
-                        antSelected[i] = allAnts[i];
+                        antSelected[i] = (allAnts[i].GetComponent<AntManager>().isActiveAndEnabled) ? allAnts[i] : null;
                     }
                 }
                 else if (startClickPos.y < endClickPos.y)
@@ -194,7 +196,7 @@ public class Controller : MonoBehaviour
                     if (allAnts[i].transform.position.x < startClickPos.x && allAnts[i].transform.position.x > endClickPos.x
                         && allAnts[i].transform.position.y > startClickPos.y && allAnts[i].transform.position.y < endClickPos.y)
                     {
-                        antSelected[i] = allAnts[i];
+                        antSelected[i] = (allAnts[i].GetComponent<AntManager>().isActiveAndEnabled) ? allAnts[i] : null;
                     }
                 }
             }
@@ -211,7 +213,7 @@ public class Controller : MonoBehaviour
             if (allAnts[i].transform.position.x > startClickPos.x - tempScalingZ && allAnts[i].transform.position.x < startClickPos.x + tempScalingZ
                 && allAnts[i].transform.position.y < startClickPos.y + tempScalingZ && allAnts[i].transform.position.y > startClickPos.y - tempScalingZ)
             {
-                antSelected[i] = allAnts[i];
+                antSelected[i] = (allAnts[i].GetComponent<AntManager>().isActiveAndEnabled) ? allAnts[i] : null;
             }
         }
     }

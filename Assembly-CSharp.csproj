@@ -63,13 +63,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Ants\AntDetectionZone.cs" />
+    <Compile Include="Assets\Scripts\Ants\AntHill.cs" />
     <Compile Include="Assets\Scripts\Ants\AntManager.cs" />
     <Compile Include="Assets\Scripts\Ants\GeneralHabilities.cs" />
     <Compile Include="Assets\Scripts\Ants\GroupsManager.cs" />
+    <Compile Include="Assets\Scripts\Ants\Inventory.cs" />
     <Compile Include="Assets\Scripts\Ants\Queen.cs" />
     <Compile Include="Assets\Scripts\Ants\worker.cs" />
     <Compile Include="Assets\Scripts\Controller.cs" />
-    <Compile Include="Assets\Scripts\Inventory.cs" />
     <Compile Include="Assets\Scripts\Resources\OtherDetectionZone.cs" />
     <Compile Include="Assets\Scripts\Resources\ResourceStats.cs" />
     <Compile Include="Assets\Scripts\db.cs" />
