@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class AntHill : MonoBehaviour
 {
-    public GameObject store, exit;
+    public static GameObject store, exit;
+    public static Transform entry;
     // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        
+        store = GameObject.Find("Store");
+        exit = GameObject.Find("AnthillExit");
+        entry = GameObject.Find("Anthill").transform;
     }
 
     // Update is called once per frame

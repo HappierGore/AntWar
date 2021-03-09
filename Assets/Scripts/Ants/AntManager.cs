@@ -23,14 +23,14 @@ public class AntManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(startInitialize)
-        {
-            Initialize();
-        }
+
+        Initialize();
+
         CheckSelected();
         if (Input.GetKeyDown(KeyCode.S))
         {
-            db.UpdateAntData(gameObject.name, antType, transform.position, antGroup, health, speed, damage, strenght);
+            string objectToGoTemp = (objecToGo == null) ? "null" : objecToGo.name;
+            db.UpdateAntData(gameObject.name, antType, transform.position, antGroup, health, speed, damage, strenght, objectToGoTemp);
         }
         FollowUI();
     }
@@ -50,13 +50,18 @@ public class AntManager : MonoBehaviour
 
     private void Initialize()
     {
-        selectedImage = transform.GetChild(0).GetComponent<SpriteRenderer>();
-        controller = GameObject.Find("controller").GetComponent<Controller>();
-        if (!db.CheckAlreadyExists(gameObject.name))
+        if(startInitialize)
         {
-            db.NewAnt(gameObject.name, antType, transform.position, antGroup, health, speed, damage, strenght);
+            transform.position = (objecToGo != null) ? AntHill.entry.transform.position : transform.position;
+            selectedImage = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            controller = GameObject.Find("controller").GetComponent<Controller>();
+            if (!db.CheckAlreadyExists(gameObject.name))
+            {
+                db.NewAnt(gameObject.name, antType, transform.position, antGroup, health, speed, damage, strenght);
+            }
+            startInitialize = false;
         }
-        startInitialize = false;
+
     }
     // UI
     /*private void UIInit()

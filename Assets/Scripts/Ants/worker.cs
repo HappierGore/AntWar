@@ -10,18 +10,15 @@ public class worker : MonoBehaviour
     private AntManager manager;
     private Vector2 gizmosPosition;
     public Vector2 pathPos2;
-    private AntHill antHill;
     public ResourceStats resource;
 
     //Inventario
     private Inventory antihillInventory, ownInventory;
-    private bool alreadyCollecting = false, alreadyDropping = false, backToWorkHelper = false;
+    private bool alreadyCollecting = false, alreadyDropping = false, backToWorkHelper = false, initialPathHelper = false;
     public bool inAntHill = false;
 
-    //Base
-    [SerializeField] private Transform basePosition;
     //Regresar al trabajo si no hay cambios en el path
-    GameObject objectToGotemp = null;
+    public GameObject objectToGotemp = null;
 
 
     void Start()
@@ -31,28 +28,13 @@ public class worker : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    { 
-        if (manager.startPath)
-        {
-            StartCoroutine(habilities.MoveXTo2(manager.pathPosition, manager.GetSpeed()));
-            StartCoroutine(habilities.MoveYTo2(manager.pathPosition, manager.GetSpeed()));
-            if (habilities.pathXCompleted && habilities.pathYCompleted)
-            {
-                manager.startPath = false;
-                pathPos2 = (!inAntHill) ? new Vector2(0, 0) : pathPos2;
-            }
-        }
-        if(manager.objecToGo != null)
-        {
-            RecollectResource();
-            DropInventory();
-            if(resource != null && resource.GetAmount() <= 0)
-            {
-                LookForNewResource();
-            }
-        }
+    {
+        OnStart();
+
+        PathManager();
 
         AntHillInside();
+
         StartCoroutine(BackToWork());
     }
 
@@ -64,8 +46,30 @@ public class worker : MonoBehaviour
         ownInventory = GetComponentInChildren<Inventory>();
         antihillInventory = GameObject.Find("Queen").GetComponent<Inventory>();
         habilities.Initialize(gameObject);
-        basePosition = GameObject.Find("Anthill").transform;
-        antHill = basePosition.GetComponent<AntHill>();
+        AntHill.entry = GameObject.Find("Anthill").transform;
+    }
+
+    private void PathManager()
+    {
+        if (manager.startPath)
+        {
+            StartCoroutine(habilities.MoveXTo2(manager.pathPosition, manager.GetSpeed()));
+            StartCoroutine(habilities.MoveYTo2(manager.pathPosition, manager.GetSpeed()));
+            if (habilities.pathXCompleted && habilities.pathYCompleted)
+            {
+                manager.startPath = false;
+                pathPos2 = (!inAntHill) ? new Vector2(0, 0) : pathPos2;
+            }
+        }
+        if (manager.objecToGo != null)
+        {
+            RecollectResource();
+            DropInventory();
+            if (resource != null && resource.GetAmount() <= 0)
+            {
+                LookForNewResource();
+            }
+        }
     }
 
     private void RecollectResource()
@@ -111,7 +115,7 @@ public class worker : MonoBehaviour
         {
             habilities.pathXCompleted = false;
             habilities.pathYCompleted = false;
-            manager.pathPosition = basePosition.position;
+            manager.pathPosition = AntHill.entry.position;
             manager.startPath = true;
         }
     }
@@ -132,7 +136,7 @@ public class worker : MonoBehaviour
         {
             for (int i = 0; i < detectionZone.nearResource.Length; i++)
             {
-                if (detectionZone.nearResource[i].transform == basePosition && manager.pathPosition == new Vector2(basePosition.position.x,basePosition.position.y)
+                if (detectionZone.nearResource[i].transform == AntHill.entry && manager.pathPosition == new Vector2(AntHill.entry.position.x,AntHill.entry.position.y)
                     && !manager.startPath)
                 {
                     AnthillJoining();
@@ -143,7 +147,7 @@ public class worker : MonoBehaviour
     }
     private IEnumerator DepositInventory()
     {
-        if(!alreadyDropping && manager.pathPosition == new Vector2( antHill.store.transform.position.x, antHill.store.transform.position.y))
+        if(!alreadyDropping && manager.pathPosition == new Vector2( AntHill.store.transform.position.x, AntHill.store.transform.position.y))
         {
             alreadyDropping = true;
             while (ownInventory.totalCollected > 0)
@@ -185,18 +189,18 @@ public class worker : MonoBehaviour
         manager.enabled = false;
         transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
-        manager.pathPosition = antHill.store.transform.position;
+        manager.pathPosition = AntHill.store.transform.position;
         manager.startPath = true;
-        transform.position = antHill.exit.transform.position;
+        transform.position = AntHill.exit.transform.position;
     }
     private void AntHillInside()
     {
         if(inAntHill)
         {
-            if(manager.pathPosition != new Vector2(antHill.store.transform.position.x,antHill.store.transform.position.y))
+            if(manager.pathPosition != new Vector2(AntHill.store.transform.position.x, AntHill.store.transform.position.y))
             {
                 pathPos2 = (pathPos2 == new Vector2(0,0)) ? new Vector2(Controller.clickedPosition.x,Controller.clickedPosition.y) : pathPos2;
-                manager.pathPosition = antHill.exit.transform.position;
+                manager.pathPosition = AntHill.exit.transform.position;
             }
         }
 
@@ -204,7 +208,7 @@ public class worker : MonoBehaviour
         {
             for (int i = 0; i < detectionZone.nearResource.Length; i++)
             {
-                if (detectionZone.nearResource[i] == antHill.store && !manager.startPath)
+                if (detectionZone.nearResource[i] == AntHill.store && !manager.startPath)
                 {
                     StartCoroutine(DepositInventory());
                 }
@@ -214,11 +218,11 @@ public class worker : MonoBehaviour
     }
     private void AnthillLeaving()
     {
-        if (detectionZone.nearResource.Length > 0 && manager.pathPosition != new Vector2(antHill.store.transform.position.x,antHill.store.transform.position.y) && inAntHill)
+        if (detectionZone.nearResource.Length > 0 && manager.pathPosition != new Vector2(AntHill.store.transform.position.x, AntHill.store.transform.position.y) && inAntHill)
         {
             if(pathPos2 == new Vector2(0.0f,0.0f))
             {
-                pathPos2 = (manager.objecToGo == null && new Vector3(manager.pathPosition.x,manager.pathPosition.y) != antHill.exit.transform.position) ? manager.pathPosition : new Vector2(manager.objecToGo.transform.position.x,manager.objecToGo.transform.position.y);
+                pathPos2 = (manager.objecToGo == null && new Vector3(manager.pathPosition.x,manager.pathPosition.y) != AntHill.exit.transform.position) ? manager.pathPosition : new Vector2(manager.objecToGo.transform.position.x,manager.objecToGo.transform.position.y);
             }
             else if(manager.objecToGo != null && objectToGotemp != manager.objecToGo)
             {
@@ -229,13 +233,13 @@ public class worker : MonoBehaviour
                 resource = manager.objecToGo.GetComponent<ResourceStats>();
                 manager.pathPosition = manager.objecToGo.transform.position;
             }//Soluciona el problema de que cambio de recurso
-            manager.pathPosition = antHill.exit.transform.position;
+            manager.pathPosition = AntHill.exit.transform.position;
             manager.startPath = true;
             if(detectionZone.nearResource.Length > 0)
             {
                 for (int i = 0; i < detectionZone.nearResource.Length; i++)
                 {
-                    if (detectionZone.nearResource[i] == antHill.exit)
+                    if (detectionZone.nearResource[i] == AntHill.exit)
                     {
                         manager.pathPosition = (objectToGotemp != null && manager.objecToGo != null) ? pathPos2 : new Vector2(Controller.clickedPosition.x,Controller.clickedPosition.y);
                         inAntHill = false;
@@ -284,6 +288,15 @@ public class worker : MonoBehaviour
         }
     }
 
+    private void OnStart()
+    {
+        if(!initialPathHelper && manager.objecToGo != null)
+        {
+            manager.pathPosition = manager.objecToGo.transform.position;
+            manager.startPath = true;
+            initialPathHelper = true;
+        }
+    }
 
     public float DistanceP1P2(float P1, float P2)
     {

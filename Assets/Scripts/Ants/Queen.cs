@@ -44,9 +44,11 @@ public class Queen : MonoBehaviour
             manager.SetSpeed(db.GetSpeedFromID(i));
             manager.SetDamage(db.GetDamageFromID(i));
             manager.SetStrenght(db.GetStrenghtFromID(i));
+            manager.objecToGo = GameObject.Find(db.GetObjectToGo(i));
             manager.startInitialize = true;
         }
     }
+
     public void SaveAllAnts()
     {
         int amount = 0;
@@ -54,7 +56,9 @@ public class Queen : MonoBehaviour
         for (int i = 0; i < allAnts.Length; i++)
         {
             AntManager manager = allAnts[i].GetComponent<AntManager>();
-            db.UpdateAntData(manager.gameObject.name, manager.GetAntType(), manager.transform.position, manager.GetGroup(), manager.GetHealth(), manager.GetSpeed(), manager.GetDamage(), manager.GetStrenght());
+            string objectToGoTemp = (manager.objecToGo == null) ? "null" : manager.objecToGo.name;
+            db.UpdateAntData(manager.gameObject.name, manager.GetAntType(), manager.transform.position, manager.GetGroup(),
+                manager.GetHealth(), manager.GetSpeed(), manager.GetDamage(), manager.GetStrenght(),objectToGoTemp);
             amount += 1;
         }
         Debug.Log("Saved " + amount + " ants");

@@ -73,6 +73,7 @@
     <Compile Include="Assets\Scripts\Controller.cs" />
     <Compile Include="Assets\Scripts\Resources\OtherDetectionZone.cs" />
     <Compile Include="Assets\Scripts\Resources\ResourceStats.cs" />
+    <Compile Include="Assets\Scripts\UIEnviroment.cs" />
     <Compile Include="Assets\Scripts\db.cs" />
     <Compile Include="Assets\Scripts\swipe.cs" />
     <Reference Include="UnityEngine">

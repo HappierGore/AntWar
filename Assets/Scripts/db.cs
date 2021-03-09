@@ -400,12 +400,42 @@ public class db
 
         return strenght;
     }
+    public static string GetObjectToGo(int id)
+    {
+        //
+        string conn = "URI = file:" + Application.persistentDataPath + "/antManager.db"; //Path to database.
+        IDbConnection dbconn;
+        dbconn = (IDbConnection)new SqliteConnection(conn);
+        dbconn.Open();
+        IDbCommand dbcmd = dbconn.CreateCommand();
+
+        //COMANDO
+        string sqlQuery = "SELECT objectToGo from Manager WHERE id = " + id;
+
+        dbcmd.CommandText = sqlQuery; //guarda comando
+        IDataReader reader = dbcmd.ExecuteReader(); //ejecuta comando
+        string objectName = "none";
+        while (reader.Read())
+        {
+            objectName = reader.GetString(0);
+        }
+        reader.Close();
+        reader = null;
+
+        dbcmd.Dispose();
+        dbcmd = null;
+
+        dbconn.Close();
+        dbconn = null;
+
+        return objectName;
+    }
 
 
     //------------------- GROUPS ------------------
 
     //SETTERS
-    public static void UpdateAntData(string name, string Type, Vector2 position, string group, float health, float speed, float damage, float strenght)
+    public static void UpdateAntData(string name, string Type, Vector2 position, string group, float health, float speed, float damage, float strenght, string objectToGo)
     {
         //
         string conn = "URI = file:" + Application.persistentDataPath + "/antManager.db";
@@ -419,7 +449,8 @@ public class db
         //string sqlQuery = "SELECT * FROM shipsEquipments"; //Seleccionar todo
         //string sqlQuery = "UPDATE shipsEquipments SET rightEquipment = 'simpleBullet' WHERE id = 1"; //Actualizar valor de una tabla
         string sqlQuery = "UPDATE Manager SET name = '" + name + "',type = '" + Type + "',positionX = '" + position.x + "',positionY = '" + position.y +
-            "',groups = '" + group + "',health = '" + health + "',speed = '" + speed + "',damage = '" + damage + "',strenght = '" + strenght + "' WHERE name = '" + name + "'";
+            "',groups = '" + group + "',health = '" + health + "',speed = '" + speed + "',damage = '" + damage + "',strenght = '" + strenght +
+            "',objectToGo = '" + objectToGo + "' WHERE name = '" + name + "'";
         Debug.Log(sqlQuery);
         dbcmd.CommandText = sqlQuery; //guarda comando
         IDataReader reader = dbcmd.ExecuteReader(); //ejecuta comando
